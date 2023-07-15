@@ -16,7 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from ninja import NinjaAPI
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import HttpResponse
+
+api = NinjaAPI()
+
+@api.get('/get_token')
+def get_token(request):
+    return HttpResponse()
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('api/', api.urls)
 ]

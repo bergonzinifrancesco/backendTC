@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 django-ninja = "*"
+django-ninja-auth = "*"
 
 [dev-packages]
 

@@ -5,6 +5,10 @@ name = "pypi"
 
 [packages]
 django-ninja = "*"
+django-ninja-jwt = "*"
+six = "*"
+zxcvbn = "*"
+email-validator = "*"
 
 [dev-packages]
 

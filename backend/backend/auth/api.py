@@ -29,33 +29,38 @@ class ConflictError(Schema):
     email:str = None
     message:str = None
 
-@router.post('register/', tags=['Django Ninja Auth'], response={200: UserToken, 400: PasswordFeedback, 409: ConflictError, 500: str})
+@router.post('/register', tags=['Django Ninja Auth'], response={200: UserToken, 400: PasswordFeedback, 409: ConflictError, 500: str})
 def register_user(request, user: SignupUser):
     '''
         Funzione di registrazione utenti. Restituisce i token JWT se va a buon fine.
 
-        Errori:
-            - 400 se la password è debole
-            - 409 se ci sono problemi con username od email
+        Errori: <br>\
+            - 400 se la password è debole <br>\
+            - 409 se ci sono problemi con username od email <br>\
             - 500 se il server non riesce a creare l'utente
     '''
 
     # utente già presente, early exit con Conflict Error
-    if(User.objects.get(username=user.username)):
-        return 409, {
-            'username': user.username,
-            'message': "Username già presente."
-        }
-    
+    try:
+        if(User.objects.get(username=user.username)):
+            return 409, {
+                'username': user.username,
+                'message': "Username già presente."
+            }
+    except Exception:
+        pass
+
     # controllo email e normalizzazione della stessa, no resolver DNS
     try:
         normalized_email = validate_email(user.email, check_deliverability=False)
-        user.email = normalized_email
+        user.email = normalized_email.normalized
     except EmailNotValidError:
         return 409, {
             'email': user.email,
             'message': "Email non valida, formato errato."
         }
+    except Exception:
+        return 500, {'message': "Errore nella validazione dell'email"}
 
     # uso di zxcvbn per valutare la bontà della password
     password_evaluation = zxcvbn(user.password)

@@ -9,6 +9,8 @@ django-ninja-jwt = "*"
 six = "*"
 zxcvbn = "*"
 email-validator = "*"
+channels = {extras = ["daphne"], version = "*"}
+channels-redis = "*"
 
 [dev-packages]
 

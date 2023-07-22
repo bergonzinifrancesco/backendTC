@@ -1,3 +1,5 @@
 *.lock
 __pycache__/
 *.sqlite3
+package*.json
+node_modules/

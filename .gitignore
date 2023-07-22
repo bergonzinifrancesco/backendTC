@@ -1,5 +1,5 @@
 *.lock
 __pycache__/
 *.sqlite3
-package*.json
+package-lock.json
 node_modules/

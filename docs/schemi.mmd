@@ -1,0 +1,73 @@
+---
+title: Schema E-R del progetto
+---
+erDiagram
+    UTENTE {
+        int id PK "generato da Django, non nullo ed autoincrementato"
+        string(150) username UK "Obbligatorio"
+        string(128) password "Obbligatorio"
+        string(150) nome
+        string(150) cognome
+        datetime date_joined "epoch dell'utente nel db"
+        bool is_superuser "uno solo in tutto il db, non creabile"
+        bool is_staff "non utilizzato" 
+        bool is_active "django lo usa per il soft delete"
+    }
+
+    UTENTE o|--|| "INFO UTENTE" : "ha"
+
+    "INFO UTENTE" {
+        int id FK "id dell'utente"
+        float peso
+        int altezza "in cm, convertibile"
+        string[] posizioni di gioco "la prima indicata è la preferita"
+        string[] caratteristiche di gioco "disponibili da una serie di default"
+        imageFile avatar "limitato in dimensioni, da vedere il formato"
+        datetime data_nascita
+        countryCode nazionalita "country code internazionale"
+        string(xxx) bio "limitata, da decidere la lunghezza"
+    }
+
+    STRUTTURA {
+        int id PK "Gestito da Django"
+        string(150) nome
+        datetime fondazione "probabilmente solo anno"
+        geoJSON localita "geolocalizzazione"
+        float dimensione "in metri quadrati"
+        bool spogliatoi
+    }
+
+    STRUTTURA |{--|| CAMPO : "possiede"
+
+    CAMPO {
+        int struttura PK, FK
+        int numero_campo PK "relativo alla società"
+        float costo_orario "fortemente consigliato"
+        bool coperto
+        bool illuminato
+        enum tipo_superficie "sintetico, naturale, parquet, cemento, palestra"
+    }
+
+    PRENOTAZIONE ||--}o CAMPO : "per"
+    UTENTE o{--|| PRENOTAZIONE : "effettua"
+
+    PRENOTAZIONE {
+        int prenotante PK,FK "id dell'utente"
+        int struttura PK,FK
+        int numero_campo PK,FK
+        datetime orario "Obbligatorio"
+        datetime fine "sostituibile con la durata"
+    }
+
+    UTENTE o{--|| RECENSIONE : "valuta"
+    RECENSIONE ||--}o STRUTTURA : "verso"
+
+    RECENSIONE {
+        int votante PK,FK "id dell'utente"
+        int struttura PK,FK "id della struttura"
+        int[1-5] voto
+        string(xxx) descrizione "breve, decidere il limite"
+    }
+
+    UTENTE o{--|| "ADMIN STRUTTURA" : "è"
+    "ADMIN STRUTTURA" ||--o| STRUTTURA : "ha"

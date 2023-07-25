@@ -4,6 +4,7 @@ from backend.settings import MEDIA_ROOT
 from django_countries.fields import CountryField
 from datetime import date
 from phonenumber_field.modelfields import PhoneNumberField
+from userInfo.choices import Posizioni, Caratteristiche
 
 class InfoAvanzate(models.Model):
     user_id = models.OneToOneField(to=User, on_delete=models.CASCADE, primary_key=True, unique=True)
@@ -31,7 +32,7 @@ class InfoAvanzate(models.Model):
     numero_telefono = PhoneNumberField(
         blank=True,
         region="IT",
-        max_length=12
+        max_length=20
     )
     bio = models.CharField(
         max_length=300,
@@ -41,16 +42,6 @@ class InfoAvanzate(models.Model):
 
 class PosizioniGioco(models.Model):
     pos_id = models.OneToOneField(to=User, on_delete=models.CASCADE, primary_key=True, unique=True)
-    
-    class Posizioni(models.TextChoices):
-        PORTIERE = "POR", ("Portiere")
-        DIFENSORE = "DIF", ("Difensore")
-        CENTROCAMPISTA = "CEN", ("Centrocampista")
-        ATTACCANTE = "ATT", ("Attaccante")
-        TERZINO = "DIF_TER", ("Terzino")
-        ALA = "CEN_ALA", ("Ala")
-        TREQUARTISTA = "CEN_TRQ", ("Trequartista")
-        QLS = "QLS", ("Qualsiasi")
     
     preferita = models.CharField(
         max_length=7,
@@ -73,14 +64,6 @@ class PosizioniGioco(models.Model):
 
 class CaratteristicheGioco(models.Model):
     car_id = models.OneToOneField(to=User, on_delete=models.CASCADE, primary_key=True, unique=True)
-    
-    class Caratteristiche(models.TextChoices):
-        VELOCE = "veloce", ("Veloce")
-        AGILE = "agile", ("Agile")
-        TECNICO = "tecnico", ("Tecnico")
-        FISICO = "fisico", ("Fisico")
-        TATTICO = "tattico", ("Tattico")
-        ACROBATA = "acrobata", ("Acrobata")
     
     principale = models.CharField(
         choices=Caratteristiche.choices,

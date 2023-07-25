@@ -11,6 +11,11 @@ zxcvbn = "*"
 email-validator = "*"
 channels = {extras = ["daphne"], version = "*"}
 channels-redis = "*"
+pipenv = "*"
+install = "*"
+django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
+pillow = "*"
+django-countries = {extras = ["pyuca"], version = "*"}
 
 [dev-packages]
 

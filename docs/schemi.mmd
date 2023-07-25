@@ -20,12 +20,29 @@ erDiagram
         int id FK "id dell'utente"
         float peso
         int altezza "in cm, convertibile"
-        string[] posizioni di gioco "la prima indicata è la preferita"
-        string[] caratteristiche di gioco "disponibili da una serie di default"
         imageFile avatar "limitato in dimensioni, da vedere il formato"
         datetime data_nascita
         countryCode nazionalita "country code internazionale"
+        phoneNumber numero_telefono "gestito con libreria"
         string(xxx) bio "limitata, da decidere la lunghezza"
+    }
+    
+    "INFO UTENTE" o|--|| "POSIZIONE UTENTE" : "definisce"
+
+    "POSIZIONE UTENTE" {
+        int id FK,PK "id dell'utente"
+        string posizione_preferita
+        string posizione_2 "opzionale"
+        string posizione_3 "opzionale"
+    }
+
+    "INFO UTENTE" o|--|| "CARATTERISTICHE GIOCO" : "definisce"
+
+    "CARATTERISTICHE GIOCO" {
+        int id FK,PK "id dell'utente"
+        string car_principale
+        string car_alternativa "opzionale"
+        string car_alternativa_2 "opzionale"
     }
 
     STRUTTURA {

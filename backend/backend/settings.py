@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'daphne',
     'channels',
     'chat',
+    'userInfo',
+    'phonenumber_field',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -139,3 +141,10 @@ CHANNEL_LAYERS = {
 NINJA_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=10),
 }
+
+PHONENUMBER_DEFAULT_REGION = "IT"
+PHONENUMBER_DB_FORMAT = "INTERNATIONAL"
+PHONENUMBER_DEFAULT_FORMAT = "INTERNATIONAL"
+
+MEDIA_ROOT = Path("../../avatars/").resolve()
+MEDIA_URL = "/avatars/"

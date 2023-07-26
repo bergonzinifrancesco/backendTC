@@ -27,6 +27,13 @@ erDiagram
         string(xxx) bio "limitata, da decidere la lunghezza"
     }
     
+    UTENTE o|--|| "AVATAR UTENTE" : "carica"
+
+    "AVATAR UTENTE" {
+        int id FK,PK "id dell'utente"
+        string image "url dell'immagine"
+    }
+
     "INFO UTENTE" o|--|| "POSIZIONE UTENTE" : "definisce"
 
     "POSIZIONE UTENTE" {

@@ -4,6 +4,7 @@ from ninja_extra import NinjaExtraAPI
 from .auth.api import router as auth_router
 from userInfo.api import router as user_router
 
+
 api = NinjaExtraAPI()
 api.register_controllers(NinjaJWTDefaultController)
 

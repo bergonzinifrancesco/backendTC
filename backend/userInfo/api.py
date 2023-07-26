@@ -1,8 +1,8 @@
 from ninja.router import Router
 from ninja_jwt.authentication import JWTAuth
 from django.contrib.auth.models import User
-from userInfo.models import InfoAvanzate, PosizioniGioco, CaratteristicheGioco
-from ninja import ModelSchema, Schema
+from userInfo.models import InfoAvanzate, PosizioniGioco, CaratteristicheGioco, AvatarUtente
+from ninja import ModelSchema, Schema, UploadedFile, File
 from django.core.exceptions import ObjectDoesNotExist
 from zxcvbn import zxcvbn
 from pydantic.error_wrappers import ValidationError
@@ -41,7 +41,7 @@ def change_password(request, password: str):
 class InfoBase(ModelSchema):
     class Config:
         model = User
-        model_fields = ['first_name', 'last_name', 'email']
+        model_fields = ['username', 'first_name', 'last_name', 'email']
 
 @router.get("/me/info_base/", response={200: InfoBase, 404: str})
 def get_info_base(request):
@@ -52,7 +52,7 @@ def get_info_base(request):
         return 404, str(e)
 
 @router.put("/me/info_base/", response={204: None, 400: str})
-def put_info_avanzate(request, info: InfoBase):
+def put_info_base(request, info: InfoBase):
     try:
         tmp = User.objects.get(username=request.user)
         tmp.__dict__.update(info.__dict__)
@@ -67,8 +67,8 @@ class Avanzate(ModelSchema):
     class Config:
         model = InfoAvanzate
         model_exclude = ['user_id', 'nazionalità', 'numero_telefono']
-    nazionalità : str = None
-    numero_telefono : str = None
+    nazionalità : str
+    numero_telefono : str
 
 @router.get("/me/info_avanzate/", response={200: Avanzate, 404: str})
 def get_info_avanzate(request):
@@ -104,6 +104,25 @@ def put_info_avanzate(request, info: Avanzate):
         # utente non creato
         return 400, str(e)
 
+@router.get('/me/avatar', response={200:str, 404:str})
+def get_avatar(request):
+    try:
+        tmp = AvatarUtente.objects.get(img_id=request.user.id)
+        return 200, tmp.image
+    except Exception as e:
+        return 404, str(e)
+
+@router.post('/me/avatar', response={204:None, 404:str})
+def post_avatar(request, file : UploadedFile = File(...)):
+    try:
+        tmp = AvatarUtente.objects.create(
+            img_id=request.user,
+            image=file
+        )
+        return 204, None
+    except Exception as e:
+        return 404, str(e)
+
 
 class SchemaPosizioni(Schema):
     preferita : PosizioniEnum
@@ -117,7 +136,6 @@ def get_posizioni(request):
         return 200, posizioni
     except Exception as e:
         return 404, str(e)
-
 
 @router.put("/me/posizioni/", response={204: None, 400: str})
 def put_posizioni(request, pos: SchemaPosizioni):

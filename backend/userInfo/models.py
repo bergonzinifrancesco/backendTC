@@ -6,20 +6,15 @@ from datetime import date
 from phonenumber_field.modelfields import PhoneNumberField
 from userInfo.choices import Posizioni, Caratteristiche
 
+
 class InfoAvanzate(models.Model):
     user_id = models.OneToOneField(to=User, on_delete=models.CASCADE, primary_key=True, unique=True)
-
     peso = models.DecimalField(
         blank=True,
         decimal_places=1,
         max_digits=4
     )
     altezza = models.PositiveSmallIntegerField(
-        blank=True
-    )
-    avatar = models.ImageField(
-        upload_to="{int:id}/avatar",
-        max_length=1000,
         blank=True
     )
     data_nascita = models.DateField(
@@ -39,6 +34,12 @@ class InfoAvanzate(models.Model):
         blank=True
     )
 
+class AvatarUtente(models.Model):
+    def uploadTo(instance, filename):
+        return f"{instance.img_id}/{filename}"
+
+    img_id = models.OneToOneField(to=User, on_delete=models.CASCADE, primary_key=True, unique=True)
+    image = models.ImageField(upload_to=uploadTo)
 
 class PosizioniGioco(models.Model):
     pos_id = models.OneToOneField(to=User, on_delete=models.CASCADE, primary_key=True, unique=True)

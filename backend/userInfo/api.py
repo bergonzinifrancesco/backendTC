@@ -104,7 +104,7 @@ def put_info_avanzate(request, info: Avanzate):
         # utente non creato
         return 400, str(e)
 
-@router.get('/me/avatar', response={200:str, 404:str})
+@router.get('/me/avatar/', response={200:str, 404:str})
 def get_avatar(request):
     try:
         tmp = AvatarUtente.objects.get(img_id=request.user.id)
@@ -112,16 +112,26 @@ def get_avatar(request):
     except Exception as e:
         return 404, str(e)
 
-@router.post('/me/avatar', response={204:None, 404:str})
+@router.put('/me/avatar/', response={204:None, 404:str})
 def post_avatar(request, file : UploadedFile = File(...)):
     try:
-        tmp = AvatarUtente.objects.create(
-            img_id=request.user,
-            image=file
-        )
+        tmp = AvatarUtente.objects.get(img_id=request.user)
+        tmp.image = file
+        tmp.save()
         return 204, None
+    except ObjectDoesNotExist:
+        try:
+            tmp = AvatarUtente.objects.create(
+                img_id=request.user,
+                image=file
+            )
+            tmp.save()
+            return 204, None
+        except Exception as e:
+            raise e
     except Exception as e:
-        return 404, str(e)
+        # utente non creato
+        return 400, str(e)
 
 
 class SchemaPosizioni(Schema):

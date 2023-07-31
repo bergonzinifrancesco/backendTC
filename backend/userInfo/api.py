@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from zxcvbn import zxcvbn
 from pydantic.error_wrappers import ValidationError
 from userInfo.choices import PosizioniEnum, CaratteristicheEnum
+from typing import Optional
 
 router = Router(auth=JWTAuth(), tags=["Utente"])
 
@@ -147,8 +148,8 @@ def post_avatar(request, file : UploadedFile = File(...)):
 
 class SchemaPosizioni(Schema):
     preferita : PosizioniEnum
-    alternativa : PosizioniEnum
-    alternativa2 : PosizioniEnum
+    alternativa : Optional[PosizioniEnum]
+    alternativa2 : Optional[PosizioniEnum]
 
 @router.get("/me/posizioni/", response={200: SchemaPosizioni, 404: str})
 def get_posizioni(request):
@@ -182,8 +183,8 @@ def put_posizioni(request, pos: SchemaPosizioni):
 
 class SchemaCaratteristiche(Schema):
     principale : CaratteristicheEnum
-    secondaria : CaratteristicheEnum
-    terziaria : CaratteristicheEnum
+    secondaria : Optional[CaratteristicheEnum]
+    terziaria : Optional[CaratteristicheEnum]
 
 @router.get("/me/caratteristiche/", response={200: SchemaCaratteristiche, 404: str})
 def get_caratteristiche(request):

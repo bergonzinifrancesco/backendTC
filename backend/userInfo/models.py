@@ -53,13 +53,13 @@ class PosizioniGioco(models.Model):
         max_length=7,
         choices=Posizioni.choices,
         default=Posizioni.QLS,
-        blank=True
+        null=True
     )
     alternativa2 = models.CharField(
         max_length=7,
         choices=Posizioni.choices,
         default=Posizioni.QLS,
-        blank=True
+        null=True
     )
 
 
@@ -73,10 +73,10 @@ class CaratteristicheGioco(models.Model):
     secondaria = models.CharField(
         choices=Caratteristiche.choices,
         max_length=8,
-        blank=True
+        null=True
     )
     terziaria = models.CharField(
         choices=Caratteristiche.choices,
         max_length=8,
-        blank=True
+        null=True
     )

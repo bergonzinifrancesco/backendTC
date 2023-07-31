@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'channels',
     'chat',
     'userInfo',
+    'struttura',
     'phonenumber_field',
     'django.contrib.admin',
     'django.contrib.auth',

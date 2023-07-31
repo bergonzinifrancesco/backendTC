@@ -17,8 +17,12 @@ def am_superuser(request):
         return 204, None
     return 404, None
 
-@router.patch('/change_password/', response={204: None, 400: str, 409: str, 500: str})
-def change_password(request, password: str):
+
+class Password(Schema):
+    password: str
+
+@router.post('/change_password/', response={204: None, 400: str, 409: str, 500: str})
+def change_password(request, password: Password):
     '''
     Cambio password dell'utente corrente.
     Restituisce: <br>\
@@ -27,16 +31,16 @@ def change_password(request, password: str):
         -409 se la password è uguale alla precedente<br>\
         -500 se non è stato possibile cambiare la password<br>\
     '''
-    if(zxcvbn(password)['score'] < 4):
+    if(zxcvbn(password.password)['score'] < 4):
         return 400, "Password più debole della precedente."
 
     try:
         current_user = User.objects.get(username=request.user)
         
-        if(current_user.check_password(password)):
-            return 400, "Password uguale alla precedente."
+        if(current_user.check_password(password.password)):
+            return 409, "Password uguale alla precedente."
         
-        current_user.set_password(password)
+        current_user.set_password(password.password)
         
         current_user.save()
         return 204, None

@@ -29,7 +29,7 @@ class ConflictError(Schema):
     email:str = None
     message:str = None
 
-@router.post('/register', tags=['Django Ninja Auth'], response={200: UserToken, 400: PasswordFeedback, 409: ConflictError, 500: str})
+@router.post('/register', tags=['Registrazione'], response={200: UserToken, 400: PasswordFeedback, 409: ConflictError, 500: str})
 def register_user(request, user: SignupUser):
     '''
         Funzione di registrazione utenti. Restituisce i token JWT se va a buon fine.

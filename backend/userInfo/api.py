@@ -10,7 +10,14 @@ from userInfo.choices import PosizioniEnum, CaratteristicheEnum
 
 router = Router(auth=JWTAuth(), tags=["Utente"])
 
-@router.patch('/change_password', response={204: None, 400: str, 409: str, 500: str})
+@router.get('/am_superuser/', response={204: None, 404: None})
+def am_superuser(request):
+    tmp = User.objects.get(username=request.user)
+    if(tmp.is_superuser):
+        return 204, None
+    return 404, None
+
+@router.patch('/change_password/', response={204: None, 400: str, 409: str, 500: str})
 def change_password(request, password: str):
     '''
     Cambio password dell'utente corrente.

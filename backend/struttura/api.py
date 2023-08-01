@@ -14,6 +14,10 @@ def am_admin(request):
     try:
         tmp = AdminStruttura.objects.filter(admin=request.user)
         structures = [i['struttura_id'] for i in tmp.values()]
-        return 200, structures
+
+        # se la lista non è vuota
+        if structures:
+            return 200, structures
+        return 404, None
     except ObjectDoesNotExist:
         return 404, None

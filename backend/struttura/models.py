@@ -1,8 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import F,Q
+from django.db.models import F,Q, UniqueConstraint
 
-# Create your models here.
 class Struttura(models.Model):
     # l'id chiave primaria è generato automaticamente da django
     nome = models.CharField(max_length=150)
@@ -22,6 +21,7 @@ class Struttura(models.Model):
     spogliatoi = models.BooleanField(
         default=False
     )
+
 
 class Campo(models.Model):
     # necessaria per creare la chiave composta
@@ -47,7 +47,8 @@ class Campo(models.Model):
         max_length=9
     )
 
-class AdminStruttura(models.Model):
+
+class Prenotazione(models.Model):
     # vincolo per avere una chiave composta
     class Meta:
         unique_together = (
@@ -68,3 +69,8 @@ class AdminStruttura(models.Model):
     num_campo = models.OneToOneField(to=Campo, on_delete=models.CASCADE)
     inizio = models.DateTimeField()
     fine = models.DateTimeField()
+
+
+class AdminStruttura(models.Model):
+    struttura = models.ForeignKey(to=Struttura, on_delete=models.CASCADE)
+    admin = models.ForeignKey(to=User, on_delete=models.CASCADE)

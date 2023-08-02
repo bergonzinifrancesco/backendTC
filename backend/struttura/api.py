@@ -36,3 +36,15 @@ def get_structure_info(request, id:int):
         return 200, tmp
     except ObjectDoesNotExist:
         return 404, "La struttura selezionata non esiste."
+
+
+@router.get('/list_structures/', response={200: List[int], 404: str})
+def list_structures(request):
+    '''
+        Restituisce tutti gli id delle strutture presenti.
+    '''
+    try:
+        tmp = Struttura.objects.all()
+        return 200, [e.id for e in tmp]
+    except ObjectDoesNotExist:
+        return 404, "Non ci sono strutture memorizzate."

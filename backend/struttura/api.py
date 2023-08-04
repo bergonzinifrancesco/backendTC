@@ -1,7 +1,7 @@
 from ninja.router import Router
 from ninja import ModelSchema
 from ninja_jwt.authentication import JWTAuth
-from struttura.models import AdminStruttura, Struttura
+from struttura.models import AdminStruttura, Struttura, Campo
 from django.core.exceptions import ObjectDoesNotExist
 from typing import List
 
@@ -48,3 +48,18 @@ def list_structures(request):
         return 200, [e.id for e in tmp]
     except ObjectDoesNotExist:
         return 404, "Non ci sono strutture memorizzate."
+
+
+@router.get('/{id_struttura}/num_pitches/', response={200: int, 404:str, 500: str})
+def num_pitches(request, id_struttura: int):
+    '''
+        Restituisce il numero di campi relativi alla struttura indicata con l'id.
+        Dà errore se la struttura non ha campi.
+    '''
+    try:
+        tmp = Campo.objects.filter(struttura=id_struttura).count()
+        if tmp:
+            return 200, tmp
+        return 404, "Non ci sono campi per questa struttura."
+    except Exception as e:
+        return 500, str(e)

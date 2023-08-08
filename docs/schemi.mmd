@@ -76,9 +76,9 @@ erDiagram
     UTENTE o{--|| PRENOTAZIONE : "effettua"
 
     PRENOTAZIONE {
-        int prenotante PK,FK "id dell'utente"
-        int struttura PK,FK
-        int numero_campo PK,FK
+        int id_prenotazione PK "auto-generata da Django"
+        int prenotante FK "id dell'utente"
+        int campo FK "entry di Campo (chiave composta)"
         datetime inizio "Obbligatorio"
         datetime fine "sostituibile con la durata"
     }

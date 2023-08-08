@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import F,Q, UniqueConstraint
 
 class Struttura(models.Model):
     # l'id chiave primaria è generato automaticamente da django
@@ -46,29 +45,6 @@ class Campo(models.Model):
         null=True,
         max_length=9
     )
-
-
-class Prenotazione(models.Model):
-    # vincolo per avere una chiave composta
-    class Meta:
-        unique_together = (
-            ('prenotante', 'struttura'),
-            ('struttura', 'num_campo'),
-        )
-        # vincolo che permette di avere sempre fine > inizio
-        # https://stackoverflow.com/questions/62610053/django-check-constraint-for-datetime
-        constraints = [
-            models.CheckConstraint(
-                check=Q(fine__gt=F('inizio')),
-                name="Controllo orari prenotazione"
-            )
-        ]
-    
-    prenotante = models.OneToOneField(to=User, on_delete=models.CASCADE, primary_key=True)
-    struttura = models.OneToOneField(to=Struttura, on_delete=models.CASCADE)
-    num_campo = models.OneToOneField(to=Campo, on_delete=models.CASCADE)
-    inizio = models.DateTimeField()
-    fine = models.DateTimeField()
 
 
 class AdminStruttura(models.Model):

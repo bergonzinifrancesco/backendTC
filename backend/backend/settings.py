@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'chat',
     'userInfo',
     'struttura',
+    'prenotazione',
     'phonenumber_field',
     'django.contrib.admin',
     'django.contrib.auth',

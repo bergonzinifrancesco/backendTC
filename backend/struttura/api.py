@@ -1,8 +1,9 @@
 from ninja.router import Router
 from ninja import ModelSchema
 from ninja_jwt.authentication import JWTAuth
-from struttura.models import AdminStruttura, Struttura, Campo
+from struttura.models import AdminStruttura, Struttura, Campo, Recensione
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Avg
 from typing import List
 
 router = Router(tags=["Struttura"])
@@ -63,7 +64,7 @@ class CampoSchema(ModelSchema):
 )
 def get_info_campi(request, id_struttura: int):
     """
-    Restituisce info sui campi appartenenti alla struttura.
+    Restituisce info sui campi appartenenti alla struttura.<br/>
     Dà errore se la struttura non ha campi.
     """
     try:
@@ -72,5 +73,51 @@ def get_info_campi(request, id_struttura: int):
         if tmp:
             return 200, tmp
         return 404, "Non ci sono campi per questa struttura."
+    except Exception as e:
+        return 500, str(e)
+
+
+@router.get("/{id_struttura}/voto_medio/", response={200: float, 404: str, 500: str})
+def get_voto_medio(request, id_struttura: int):
+    """
+    Restituisce il voto medio associato alla struttura.<br/>
+    Segnala errore se non ci sono recensioni.
+    """
+    try:
+        struttura = Struttura.objects.get(id=id_struttura)
+        media_voti = Recensione.objects.filter(struttura=struttura).aggregate(
+            Avg("voto")
+        )["voto__avg"]
+        if media_voti:
+            return 200, round(media_voti * 2) / 2
+        return 404, "Non ci sono voti per questa struttura."
+    except Exception as e:
+        return 500, str(e)
+
+
+class RecensioneSchema(ModelSchema):
+    class Config:
+        model = Recensione
+        model_exclude = ["id", "votante", "struttura"]
+
+
+@router.put(
+    "/{id_struttura}/recensione/",
+    response={204: None, 404: str, 500: str},
+    auth=JWTAuth(),
+)
+def put_voto(request, id_struttura: int, recensione: RecensioneSchema):
+    try:
+        try:
+            struttura = Struttura.objects.get(id=id_struttura)
+        except Exception as e:
+            return 404, str(e)
+        voto, created = Recensione.objects.get_or_create(
+            votante=request.user, struttura=struttura
+        )
+        voto.voto = recensione.voto
+        voto.descrizione = recensione.descrizione
+        voto.save()
+        return 204, None
     except Exception as e:
         return 500, str(e)

@@ -43,3 +43,20 @@ class Campo(models.Model):
 class AdminStruttura(models.Model):
     struttura = models.ForeignKey(to=Struttura, on_delete=models.CASCADE)
     admin = models.ForeignKey(to=User, on_delete=models.CASCADE)
+
+
+class Recensione(models.Model):
+    class Meta:
+        unique_together = (("votante", "struttura"),)
+
+    class Voti(models.IntegerChoices):
+        UNO = 1
+        DUE = 2
+        TRE = 3
+        QUATTRO = 4
+        CINQUE = 5
+
+    votante = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    struttura = models.ForeignKey(to=Struttura, on_delete=models.CASCADE)
+    voto = models.IntegerField(choices=Voti.choices, null=False)
+    descrizione = models.CharField(max_length=200, null=True)

@@ -12,7 +12,7 @@ router = Router(tags=["Prenotazione"])
 class BookingSchema(ModelSchema):
     class Config:
         model = Prenotazione
-        model_exclude = ["prenotante"]
+        model_exclude = ["id"]
 
 
 @router.get("/get_bookings/", response={200: List[BookingSchema], 404: str})

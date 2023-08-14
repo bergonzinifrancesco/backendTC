@@ -106,18 +106,22 @@ class RecensioneSchema(ModelSchema):
     response={204: None, 404: str, 500: str},
     auth=JWTAuth(),
 )
-def put_voto(request, id_struttura: int, recensione: RecensioneSchema):
+def put_voto(request, id_struttura: int, update_recensione: RecensioneSchema):
     try:
         try:
             struttura = Struttura.objects.get(id=id_struttura)
         except Exception as e:
             return 404, str(e)
-        voto, created = Recensione.objects.get_or_create(
-            votante=request.user, struttura=struttura
+
+        recensione, created = Recensione.objects.update_or_create(
+            votante=request.user,
+            struttura=struttura,
+            defaults={
+                "voto": update_recensione.voto,
+                "descrizione": update_recensione.descrizione,
+            },
         )
-        voto.voto = recensione.voto
-        voto.descrizione = recensione.descrizione
-        voto.save()
+        print(recensione, created)
         return 204, None
     except Exception as e:
         return 500, str(e)

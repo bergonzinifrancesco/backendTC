@@ -41,6 +41,39 @@ def get_structure_info(request, id: int):
         return 404, "La struttura selezionata non esiste."
 
 
+class ModifyStrutturaSchema(ModelSchema):
+    class Config:
+        model = Struttura
+        model_exclude = ["id", "lat", "long"]
+        model_fields_optional = "__all__"
+
+
+@router.patch(
+    "/{id_struttura}/modify_info/",
+    response={204: None, 403: str, 404: str, 500: str},
+    auth=JWTAuth(),
+)
+def modify_structure_info(request, id_struttura: int, new_info: ModifyStrutturaSchema):
+    """
+    Tutti i campi del dizionario JSON sono opzionali.
+    """
+    try:
+        try:
+            struttura = Struttura.objects.get(id=id_struttura)
+        except:
+            return 404, "Struttura non trovata"
+        try:
+            admin = AdminStruttura.objects.get(struttura=struttura, admin=request.user)
+        except Exception as e:
+            return 403, "Non sei admin di questa struttura."
+
+        struttura.__dict__.update(new_info.__dict__)
+        struttura.save()
+        return 204, None
+    except Exception as e:
+        return 500, str(e)
+
+
 @router.get("/list_structures/", response={200: List[int], 404: str})
 def list_structures(request):
     """
@@ -121,7 +154,6 @@ def put_voto(request, id_struttura: int, update_recensione: RecensioneSchema):
                 "descrizione": update_recensione.descrizione,
             },
         )
-        print(recensione, created)
         return 204, None
     except Exception as e:
         return 500, str(e)

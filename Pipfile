@@ -16,6 +16,7 @@ install = "*"
 django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
 pillow = "*"
 django-countries = {extras = ["pyuca"], version = "*"}
+typing-extensions = "*"
 
 [dev-packages]
 

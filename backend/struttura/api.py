@@ -1,10 +1,13 @@
 from ninja.router import Router
-from ninja import ModelSchema
+from ninja import ModelSchema, Schema
 from ninja_jwt.authentication import JWTAuth
 from struttura.models import AdminStruttura, Struttura, Campo, Recensione
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Avg
-from typing import List
+from django.db.models import Avg, Q
+from typing import List, Optional, Tuple
+from enum import Enum, IntEnum
+from pydantic import BaseModel, ValidationError
+import math
 
 router = Router(tags=["Struttura"])
 
@@ -74,14 +77,142 @@ def modify_structure_info(request, id_struttura: int, new_info: ModifyStrutturaS
         return 500, str(e)
 
 
-@router.get("/list_structures/", response={200: List[int], 404: str})
-def list_structures(request):
+class FilterOptions(Schema):
+    class Campi(str, Enum):
+        naturale = "naturale"
+        sintetico = "sintetico"
+        parquet = "parquet"
+        cemento = "cemento"
+        palestra = "palestra"
+        none = "none"
+
+    campo: Optional[List[Campi]]  # strutture con campi di questo tipo
+    is_rated: Optional[bool]  # strutture con almeno una valutazione
+    coordinates: Optional[
+        Tuple[float, float]
+    ]  # necessaria per l'ordinamento secondo vicinanza
+
+    class Costo(IntEnum):
+        economico = 5
+        medio = 10
+        costoso = 15
+
+    costo: Optional[Costo]  # filtro per costo dei campi
+
+    class Order(str, Enum):
+        prezzo = "prezzo"
+        prezzo_desc = "prezzo_desc"
+        rating = "rating"
+        rating_desc = "rating_desc"
+        vicinanza = "vicinanza"
+
+    ordine: Optional[Order]
+
+
+@router.post("/list_structures/", response={200: List[int], 404: str})
+def list_structures(request, filter: FilterOptions):
     """
-    Restituisce tutti gli id delle strutture presenti.
+    Restituisce tutti gli id delle strutture presenti.<br/>
+    Se sono specificati dei filtri, verranno utilizzati<br />
+    NOTA: <b>se il filtro è malformato, si restituiranno tutti i risultati.</b>
     """
+
+    def distanza_punti(coord_a, coord_b):
+        print("coord_a", coord_a)
+        print("coord_b", coord_b)
+        # il primo valore è latitudine, il secondo è longitudine
+        if (type(coord_a) is not tuple) or (type(coord_b) is not tuple):
+            return -1
+
+        try:
+            delta_lat = math.pow(coord_a[0] - coord_b[0], 2)
+            delta_long = math.pow(coord_a[1] - coord_b[1], 2)
+            distanza = math.sqrt(delta_lat + delta_long)
+        except Exception:
+            return -1
+
+        return distanza
+
     try:
-        tmp = Struttura.objects.all()
-        return 200, [e.id for e in tmp]
+        if filter.campo:
+            filtro_tipo_superficie = (
+                Campo.objects.filter(tipo_superficie__in=filter.campo)
+                .values("struttura")
+                .distinct()
+            )
+            strutture_filtro_superficie = Struttura.objects.filter(
+                id__in=filtro_tipo_superficie
+            )
+        else:
+            strutture_filtro_superficie = Struttura.objects.all()
+
+        if filter.is_rated:
+            strutture_filtro_rated = Struttura.objects.filter(
+                id__in=Recensione.objects.values("struttura").distinct()
+            )
+        else:
+            strutture_filtro_rated = Struttura.objects.all()
+
+        if filter.costo:
+            filtro_costo = (
+                Campo.objects.filter(costo_orario__lte=filter.costo)
+                .values("struttura")
+                .distinct()
+            )
+            strutture_filtro_costo = Struttura.objects.filter(id__in=filtro_costo)
+        else:
+            strutture_filtro_costo = Struttura.objects.all()
+
+        strutture_filtro_campo = strutture_filtro_superficie.intersection(
+            strutture_filtro_costo
+        )
+        strutture_filtro = strutture_filtro_campo.intersection(strutture_filtro_rated)
+
+        if filter.ordine:
+            if filter.ordine == "prezzo" or filter.ordine == "prezzo_desc":
+                strutture_filtro = [
+                    (
+                        struttura,
+                        Campo.objects.filter(struttura=struttura).aggregate(
+                            Avg("costo_orario")
+                        ),
+                    )
+                    for struttura in strutture_filtro
+                ]
+
+                strutture_filtro.sort(
+                    key=lambda struttura: struttura[1],
+                    reverse=(filter.ordine == "prezzo_desc"),
+                )
+                strutture_filtro = [s[0] for s in strutture_filtro]
+
+            elif filter.ordine == "rating" or filter.ordine == "rating_desc":
+                strutture_filtro = [
+                    (
+                        s,
+                        Recensione.objects.filter(struttura=s).aggregate(Avg("voto")),
+                    )
+                    for s in strutture_filtro
+                ]
+                strutture_filtro = [
+                    s for s in strutture_filtro if s[1]["voto__avg"] != None
+                ]
+
+                strutture_filtro.sort(
+                    key=lambda struttura: struttura[1]["voto__avg"],
+                    reverse=(filter.ordine == "rating__desc"),
+                )
+                strutture_filtro = [s[0] for s in strutture_filtro]
+
+            elif filter.ordine == "vicinanza" and filter.coordinates:
+                strutture_filtro = [
+                    (s, distanza_punti((s.lat, s.long), filter.coordinates))
+                    for s in strutture_filtro
+                ]
+                strutture_filtro.sort(key=lambda struttura: struttura[1])
+                strutture_filtro = [s[0] for s in strutture_filtro]
+
+        return 200, [e.id for e in strutture_filtro]
     except ObjectDoesNotExist:
         return 404, "Non ci sono strutture memorizzate."
 

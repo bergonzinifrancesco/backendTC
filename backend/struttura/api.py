@@ -84,18 +84,17 @@ class FilterOptions(Schema):
         parquet = "parquet"
         cemento = "cemento"
         palestra = "palestra"
-        none = "none"
 
     campo: Optional[List[Campi]]  # strutture con campi di questo tipo
     is_rated: Optional[bool]  # strutture con almeno una valutazione
-    coordinates: Optional[
+    coordinate: Optional[
         Tuple[float, float]
     ]  # necessaria per l'ordinamento secondo vicinanza
 
-    class Costo(IntEnum):
-        economico = 5
-        medio = 10
-        costoso = 15
+    class Costo(str, Enum):
+        economico = "economico"
+        medio = "medio"
+        costoso = "costoso"
 
     costo: Optional[Costo]  # filtro per costo dei campi
 
@@ -154,8 +153,14 @@ def list_structures(request, filter: FilterOptions):
             strutture_filtro_rated = Struttura.objects.all()
 
         if filter.costo:
+            if filter.costo == "economico":
+                costo = 5
+            elif filter.costo == "medio":
+                costo = 10
+            elif filter.costo == "costoso":
+                costo = 15
             filtro_costo = (
-                Campo.objects.filter(costo_orario__lte=filter.costo)
+                Campo.objects.filter(costo_orario__lte=costo)
                 .values("struttura")
                 .distinct()
             )
@@ -163,10 +168,9 @@ def list_structures(request, filter: FilterOptions):
         else:
             strutture_filtro_costo = Struttura.objects.all()
 
-        strutture_filtro_campo = strutture_filtro_superficie.intersection(
-            strutture_filtro_costo
+        strutture_filtro = strutture_filtro_superficie.intersection(
+            strutture_filtro_rated, strutture_filtro_costo
         )
-        strutture_filtro = strutture_filtro_campo.intersection(strutture_filtro_rated)
 
         if filter.ordine:
             if filter.ordine == "prezzo" or filter.ordine == "prezzo_desc":
@@ -180,8 +184,12 @@ def list_structures(request, filter: FilterOptions):
                     for struttura in strutture_filtro
                 ]
 
+                strutture_filtro = [
+                    s for s in strutture_filtro if s[1]["costo_orario__avg"] != None
+                ]
+
                 strutture_filtro.sort(
-                    key=lambda struttura: struttura[1],
+                    key=lambda struttura: struttura[1]["costo_orario__avg"],
                     reverse=(filter.ordine == "prezzo_desc"),
                 )
                 strutture_filtro = [s[0] for s in strutture_filtro]
@@ -204,9 +212,9 @@ def list_structures(request, filter: FilterOptions):
                 )
                 strutture_filtro = [s[0] for s in strutture_filtro]
 
-            elif filter.ordine == "vicinanza" and filter.coordinates:
+            elif filter.ordine == "vicinanza" and filter.coordinate:
                 strutture_filtro = [
-                    (s, distanza_punti((s.lat, s.long), filter.coordinates))
+                    (s, distanza_punti((s.lat, s.long), filter.coordinate))
                     for s in strutture_filtro
                 ]
                 strutture_filtro.sort(key=lambda struttura: struttura[1])

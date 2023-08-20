@@ -154,11 +154,11 @@ def list_structures(request, filter: FilterOptions):
 
         if filter.costo:
             if filter.costo == "economico":
-                costo = 5
+                costo = 3
             elif filter.costo == "medio":
-                costo = 10
+                costo = 5
             elif filter.costo == "costoso":
-                costo = 15
+                costo = 8
             filtro_costo = (
                 Campo.objects.filter(costo_orario__lte=costo)
                 .values("struttura")

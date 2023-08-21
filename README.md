@@ -6,7 +6,9 @@ Il progetto è organizzato in cartelle, non dovrebbe essere necessario conoscere
 
 # Istruzioni per l'uso
 Dalla cartella base (quella corrente):
-`cd backend <br/>
+
+`cd backend
+
 ./manage.py runserver
 `
 

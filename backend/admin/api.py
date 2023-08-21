@@ -123,3 +123,20 @@ def remove_users_from_structures(request, assignments: List[Assignment]):
         return 204, None
     except Exception as e:
         return 500, str(e)
+
+
+@router.delete(
+    "/remove_structure/",
+    response={200: str, 403: str, 404: str, 500: str},
+    auth=JWTAuth(),
+)
+def remove_structure_by_id(request, id_struttura: int):
+    if not request.user.is_superuser:
+        return 403, "Non sei admin del sito"
+
+    try:
+        s = Struttura.objects.get(id=id_struttura)
+        s.delete()
+        return 200, "Rimozione della struttura avvenuta con successo."
+    except ObjectDoesNotExist:
+        return 404, "Struttura non trovata"

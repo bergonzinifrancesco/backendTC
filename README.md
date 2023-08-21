@@ -8,6 +8,8 @@ Il progetto è organizzato in cartelle, non dovrebbe essere necessario conoscere
 Dalla cartella base (quella corrente):
 
 ```
+pipenv shell
+
 cd backend
 
 ./manage.py runserver

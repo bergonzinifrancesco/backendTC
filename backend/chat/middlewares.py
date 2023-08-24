@@ -7,6 +7,7 @@ from ninja_jwt.authentication import JWTAuth
 
 User = get_user_model()
 
+
 @database_sync_to_async
 def get_user(username):
     try:
@@ -16,12 +17,11 @@ def get_user(username):
 
 
 class WebSocketJWTAuthMiddleware:
-
     def __init__(self, app):
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        username = str(scope["query_string"])
+        username = str(scope["query_string"], "utf-8")
         scope["user"] = await get_user(username)
 
         return await self.app(scope, receive, send)

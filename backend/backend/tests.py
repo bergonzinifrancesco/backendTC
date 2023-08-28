@@ -29,7 +29,7 @@ response = c.post(
     content_type="application/json",
 )
 
-print("\n", response, "\n")
+print("\n", response)
 
 if response.status_code != 200:
     print("Non esiste l'utente nicolo\n")

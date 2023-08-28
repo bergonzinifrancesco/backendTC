@@ -228,7 +228,7 @@ def list_structures(request, filter: FilterOptions):
 class CampoSchema(ModelSchema):
     class Config:
         model = Campo
-        model_exclude = ["struttura", "id"]
+        model_exclude = ["struttura"]
 
 
 @router.get(

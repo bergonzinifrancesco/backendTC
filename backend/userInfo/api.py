@@ -141,22 +141,14 @@ def get_avatar(request):
         return 404, str(e)
 
 
-@router.put("/me/avatar/", response={204: None, 404: str})
+@router.post("/me/avatar/", response={204: None, 400: str})
 def post_avatar(request, file: UploadedFile = File(...)):
     try:
-        tmp = AvatarUtente.objects.get(img_id=request.user)
-        tmp.image = file
-        tmp.save()
+        avatar, _ = AvatarUtente.objects.get_or_create(img_id=request.user)
+        avatar.image = file
+        avatar.save()
         return 204, None
-    except ObjectDoesNotExist:
-        try:
-            tmp = AvatarUtente.objects.create(img_id=request.user, image=file)
-            tmp.save()
-            return 204, None
-        except Exception as e:
-            raise e
     except Exception as e:
-        # utente non creato
         return 400, str(e)
 
 
